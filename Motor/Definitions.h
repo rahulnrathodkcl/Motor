@@ -1,28 +1,34 @@
 #ifndef DEF_h
 #define DEF_h
 
-#include <SoftwareSerial.h>
 #include <HardwareSerial.h>
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/power.h>
+
+// #define __AVR_ATmega128__
+
+#ifndef __AVR_ATmega128__
+	#include <SoftwareSerial.h>
+#endif
 
 #define TURN_ON true
 #define TURN_OFF false
 
 
 #define adminNumber F("7041196959")
+
 #define STR_SAPBR_PARAM "AT+SAPBR=3,1,\""
 #define STR_SAPBR_GPRS "ConType\",\"GPRS\"\r\n"
 #define STR_SAPBR_APN "APN\",\""
 #define STR_SAPBR_START "AT+SAPBR=1,1\r\n"
 #define STR_SAPBR_STOP "AT+SAPBR=0,1\r\n"
-
 #define WATCHDOG_OFF    (0)
+
 // #define WATCHDOG_16MS   (_BV(WDE))
 // #define WATCHDOG_250MS  (_BV(WDP2) | _BV(WDE))
 
-#define disable_debug
+// #define disable_debug
 // #define software_SIM
 // #ifdef disable_debug
 // #undef software_SIM

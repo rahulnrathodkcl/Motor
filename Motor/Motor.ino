@@ -1,6 +1,6 @@
 #include "Definitions.h"
 #include "Motor_MGR.h"
-#include "SIM.h"
+#include "DSIM.h"
 #include "S_EEPROM.h"
 
 S_EEPROM eeprom1;
@@ -31,39 +31,54 @@ bool initTurnOn=false;
 // void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
 // void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
 
-void __attribute__((noinline)) watchdogConfig(uint8_t x);
+// void __attribute__((noinline)) watchdogConfig(uint8_t x);
+
 
 #ifndef disable_debug
-SoftwareSerial s1(5, 6);
-#ifdef software_SIM
-SIM sim1(&Serial, &s1);
-// Motor_MGR motor1(&Serial,&sim1,&eeprom1,&battery1);
-Motor_MGR motor1(&Serial, &sim1, &eeprom1);
-HardwareSerial* USART1 = &Serial;
-SoftwareSerial* SUSART1 = &s1;
+  #ifndef __AVR_ATmega128__
+    SoftwareSerial s1(5, 6);
+    #ifdef software_SIM
+      DSIM sim1(&Serial, &s1);
+      // Motor_MGR motor1(&Serial,&sim1,&eeprom1,&battery1);
+      Motor_MGR motor1(&Serial, &sim1, &eeprom1);
+      HardwareSerial* USART1 = &Serial;
+      SoftwareSerial* SUSART1 = &s1;
+    
+    #else
+      DSIM sim1(&s1, &Serial);
+      // Motor_MGR motor1(&s1,&sim1,&eeprom1,&battery1);
+      Motor_MGR motor1(&s1, &sim1, &eeprom1);
+      SoftwareSerial* USART1 = &s1;
+      HardwareSerial* SUSART1 = &Serial;
+    #endif
+  #else
+      DSIM sim1(&Serial, &Serial1);
+      Motor_MGR motor1(&Serial, &sim1, &eeprom1);
+      HardwareSerial* USART1 = &Serial;
+      HardwareSerial* SUSART1 = &Serial1;
+  #endif
 
 #else
-SIM sim1(&s1, &Serial);
-// Motor_MGR motor1(&s1,&sim1,&eeprom1,&battery1);
-Motor_MGR motor1(&s1, &sim1, &eeprom1);
-SoftwareSerial* USART1 = &s1;
-HardwareSerial* SUSART1 = &Serial;
-#endif
-#else
-#ifdef software_SIM
-SoftwareSerial s1(5, 6);
-SIM sim1(&s1);
-SoftwareSerial* SUSART1 = &s1;
-#else
-SIM sim1(&Serial);
-#endif
+  #ifndef __AVR_ATmega128__
+    #ifdef software_SIM
+      SoftwareSerial s1(5, 6);
+      DSIM sim1(&s1);
+      SoftwareSerial* SUSART1 = &s1;
+    #else
+      DSIM sim1(&Serial);
+    #endif
+  #else
+      DSIM sim1(&Serial);
+  #endif
 Motor_MGR motor1(&sim1, &eeprom1);
 #endif
 
-
-
 void setup() {
-  byte b=MCUSR;
+  #ifndef __AVR_ATmega128__
+    byte b=MCUSR;
+  #else
+    byte b=MCUCSR;
+  #endif
   pinMode(PIN_TURNOFF,OUTPUT);
   digitalWrite(PIN_TURNOFF,LOW);
   pinMode(PIN_BATLEVEL,INPUT_PULLUP);
@@ -83,7 +98,7 @@ void setup() {
   PCMSK0 |= (1 << PCINT1);  // set PCINT1 to trigger an interrupt on state change
 
   noInterrupts();
-  watchdogConfig(WATCHDOG_OFF);
+  // watchdogConfig(WATCHDOG_OFF);
   // wdt_init();
   // put your setup code here, to run once:
   interrupts();
@@ -115,10 +130,10 @@ void setup() {
 }
 
 
-void watchdogConfig(uint8_t x) {
-  WDTCSR = _BV(WDCE) | _BV(WDE);
-  WDTCSR = x;
-}
+// void watchdogConfig(uint8_t x) {
+  // WDTCSR = _BV(WDCE) | _BV(WDE);
+  // WDTCSR = x;
+// }
 
 void IVR_PHASE()
 {
@@ -129,7 +144,7 @@ void IVR_RING()
 {
   sim1.tempInterruptTime=millis();
   sim1.inInterrupt=true;
-}   //stub, used to wake up the MCU by SIM by generating interrupt on PIN_RING
+}   //stub, used to wake up the MCU by DSIM by generating interrupt on PIN_RING
 
 ISR(PCINT0_vect)
 {
@@ -152,7 +167,11 @@ ISR(BADISR_vect)
 {
 #ifndef disable_debug
   USART1->println("!");
-  USART1->println(MCUSR);
+  #ifndef __AVR_ATmega128__
+    USART1->println(MCUSR);
+  #else
+    USART1->println(MCUCSR);
+  #endif
 #endif
 }
 
@@ -440,7 +459,7 @@ void loop() {
       }
       else if(str.startsWith("@"))
       {
-        // not to remove '\r' from string, as it would be removed by operateOnMsg() in SIM
+        // not to remove '\r' from string, as it would be removed by operateOnMsg() in DSIM
         // so, the stop index of substring should be str.length().
         // otherwise , if '\r' is not removed in operateOnMsg than str.length() -1 should be stop index.
         str = str.substring(1,str.length());      

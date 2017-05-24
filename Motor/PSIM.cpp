@@ -1,50 +1,69 @@
 //Version 2 Dated : 29052016
-#include "SIM.h"
+#include "PSIM.h"
 
 /*
   Gets the Phone Numbers From the EEPROM Class.
 */
 #ifndef disable_debug
-#ifdef software_SIM
-SIM::SIM(HardwareSerial* serial, SoftwareSerial* serial1)
-{
-  _NSerial = serial;
-  _NSerial->begin(19200);
-  _SSerial = serial1;
-  _SSerial->begin(19200);
-  anotherConstructor();
-}
+  #ifndef __AVR_ATmega128__
+    #ifdef software_SIM
+    PSIM::PSIM(HardwareSerial* serial, SoftwareSerial* serial1)
+    {
+      _NSerial = serial;
+      _NSerial->begin(19200);
+      _SSerial = serial1;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }
+    #else
+    PSIM::PSIM(SoftwareSerial* serial, HardwareSerial* serial1)
+    {
+      _NSerial = serial;
+      _NSerial->begin(19200);
+      _SSerial = serial1;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }
+    #endif
+  #else
+    PSIM::PSIM(HardwareSerial* serial, HardwareSerial* serial1)
+    {
+      _NSerial = serial;
+      _NSerial->begin(19200);
+      _SSerial = serial1;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }    
+  #endif
 #else
-SIM::SIM(SoftwareSerial* serial, HardwareSerial* serial1)
-{
-  _NSerial = serial;
-  _NSerial->begin(19200);
-  _SSerial = serial1;
-  _SSerial->begin(19200);
-  anotherConstructor();
-}
+  #ifndef __AVR_ATmega128__
+    #ifdef software_SIM
+    PSIM::PSIM(SoftwareSerial* serial)
+    {
+      _SSerial = serial;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }
+    #else
+    PSIM::PSIM(HardwareSerial* serial)
+    {
+      _SSerial = serial;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }
+    #endif  
+  #else
+    PSIM::PSIM(HardwareSerial* serial)
+    {
+      _SSerial = serial;
+      _SSerial->begin(19200);
+      anotherConstructor();
+    }    
+  #endif
 #endif
 
-#else
-#ifdef software_SIM
-SIM::SIM(SoftwareSerial* serial)
-{
-  _SSerial = serial;
-  _SSerial->begin(19200);
-  anotherConstructor();
-}
-#else
-SIM::SIM(HardwareSerial* serial)
-{
-  _SSerial = serial;
-  _SSerial->begin(19200);
-  anotherConstructor();
-}
-#endif
-#endif
 
-
-void SIM::anotherConstructor()
+void PSIM::anotherConstructor()
 {
   // adminNumber = "7041196959";
   initialized = false;
@@ -66,7 +85,7 @@ void SIM::anotherConstructor()
   // attemptsToCall=0;
 
   actionType = 'N';
-  makeResponse = false;
+  // makeResponse = false;
   // responseToAction = false;
 
   callCutWaitTime = 580;
@@ -80,12 +99,12 @@ void SIM::anotherConstructor()
   // acceptCommands();
 }
 
-void SIM::startSIMAfterUpdate()
+void PSIM::startSIMAfterUpdate()
 {
   sendBlockingATCommand(F("AT+CFUN=1,1\r\n"));
 }
 
-void SIM::sendUpdateStatus(byte updateStatus)
+void PSIM::sendUpdateStatus(byte updateStatus)
 {
   String promptStr;
 
@@ -106,12 +125,12 @@ void SIM::sendUpdateStatus(byte updateStatus)
     }
 }
 
-inline void SIM::delAllMsg()
+inline void PSIM::delAllMsg()
 {
   sendBlockingATCommand(F("AT+CMGDA=\"DEL ALL\"\r\n"));
 }
 
-bool SIM::isNumeric(String &str)
+bool PSIM::isNumeric(String &str)
 {
   for (byte i = 0; i < str.length(); i++)
   {
@@ -121,7 +140,7 @@ bool SIM::isNumeric(String &str)
   return true;
 }
 
-// bool SIM::connectToServer(String serverIpAddress)
+// bool PSIM::connectToServer(String serverIpAddress)
 // {
 //   String cmd="AT+CIPSTART=\"TCP\",\"";
 //   cmd=cmd+serverIpAddress;
@@ -140,7 +159,7 @@ bool SIM::isNumeric(String &str)
 //   return false;
 // }
 
-// bool SIM::sendHTTPRequest(String req)
+// bool PSIM::sendHTTPRequest(String req)
 // {
 //   bool gotresp=false;
 //   unsigned long int temp = sizeof(req);
@@ -167,7 +186,7 @@ bool SIM::isNumeric(String &str)
 // }
 
 
-// byte SIM::getProgInfo(String fileName)
+// byte PSIM::getProgInfo(String fileName)
 // {
 //   String cmd="GET ";
 //   cmd=cmd+fileName;
@@ -226,7 +245,7 @@ bool SIM::isNumeric(String &str)
 //   return 0;
 // }
 
-// bool SIM::getFile(byte fileType, String fileName,String &firmwareFile)
+// bool PSIM::getFile(byte fileType, String fileName,String &firmwareFile)
 // {
 //   String cmd="GET ";
 //   cmd=cmd+fileName;
@@ -272,7 +291,7 @@ bool SIM::isNumeric(String &str)
 //   return false;
 // }
 
-// bool SIM::decodeString(byte fileType,String &newData, String &returnFile)
+// bool PSIM::decodeString(byte fileType,String &newData, String &returnFile)
 // {
 //   switch(fileType)
 //   {
@@ -287,7 +306,7 @@ bool SIM::isNumeric(String &str)
 //   return true;
 // }
 
-// void SIM::getProgramSize(String ipaddress,String version)
+// void PSIM::getProgramSize(String ipaddress,String version)
 // {
 //   String fileName=ipaddress;
 //   fileName=fileName + "/";
@@ -304,11 +323,11 @@ bool SIM::isNumeric(String &str)
 //   return false;
 // }
 
-// void SIM::downloadFirmware()
+// void PSIM::downloadFirmware()
 // {
 // }
 
-bool SIM::extendedSendCommand(String cmd,byte timeout)
+bool PSIM::extendedSendCommand(String cmd,byte timeout)
 {
   sendCommand(cmd,false);
   unsigned long temp =millis();
@@ -326,13 +345,13 @@ bool SIM::extendedSendCommand(String cmd,byte timeout)
   return false;
 }
 
-bool SIM::startGPRS(String apn)
+bool PSIM::startGPRS(String apn)
 {
     //AT+SAPBR=3,1,"ConType","GPRS"
-  	// String m1="AT+SAPBR=3,1,\"";
-  	// String cmd;
-  	// cmd=m1;
-  	// cmd=cmd+"ConType\",\"GPRS\"\r\n";
+    // String m1="AT+SAPBR=3,1,\"";
+    // String cmd;
+    // cmd=m1;
+    // cmd=cmd+"ConType\",\"GPRS\"\r\n";
     String cmd=F(STR_SAPBR_PARAM);
     cmd = cmd + F(STR_SAPBR_GPRS);
     if(extendedSendCommand(cmd,50))
@@ -357,12 +376,12 @@ bool SIM::startGPRS(String apn)
   return false;
 }
 
-bool SIM::stopGPRS()
+bool PSIM::stopGPRS()
 {
-		return(sendBlockingATCommand(F(STR_SAPBR_STOP),true));
+    return(sendBlockingATCommand(F(STR_SAPBR_STOP),true));
 }
 
-bool SIM::connectToFTP(String ipaddress)
+bool PSIM::connectToFTP(String ipaddress)
 {
   String cmd;
   //AT+FTPCID=1
@@ -388,9 +407,9 @@ bool SIM::connectToFTP(String ipaddress)
   return false;
 }
 
-bool SIM::setFile(String filename)
+bool PSIM::setFile(String filename)
 {
-		String m1=F("AT+FTPGET");
+    String m1=F("AT+FTPGET");
     String cmd;
     cmd=m1;
     cmd=cmd + "NAME=\"";   //m.bin\"\r\n;
@@ -399,21 +418,23 @@ bool SIM::setFile(String filename)
 
     if(sendBlockingATCommand(cmd,true))
     {
-    		cmd=m1;
-    		cmd=m1+"PATH=\"/\"\r\n";
+        cmd=m1;
+        cmd=m1+"PATH=\"/\"\r\n";
         if(sendBlockingATCommand(cmd),true)
             return true;  
     }
     return false;
 }
 
-bool SIM::getProgramSize()
-{
 
-  if(setFile("m.hex"))
+bool PSIM::getProgramSize()
+{
+  // if(setFile("m.hex"))
+  if(setFile(getHexFileName()))
   {
-  	if(eeprom1->programSizeSet)
-  		return true;
+    // if(programSizeSet)
+    if(eeprom1->programSizeSet)
+      return true;
       // AT+FTPSIZE
       // OK
       // +FTPSIZE: 1,0,22876
@@ -439,6 +460,7 @@ bool SIM::getProgramSize()
               #endif
               if(stringContains(str,F("+FTPSIZE: 1,0,"),14,str.length()-1))
               {
+                // saveProgramSize(str.toInt());
                 eeprom1->saveProgramSize(str.toInt());
                 #ifndef disable_debug
                   _NSerial->println(str);
@@ -451,7 +473,7 @@ bool SIM::getProgramSize()
   return false;
 }
 
-// bool SIM::extendedSendCommand(String &cmd,String vstr,unsigned short int len,unsigned short int timeout)
+// bool PSIM::extendedSendCommand(String &cmd,String vstr,unsigned short int len,unsigned short int timeout)
 // {
 //   sendCommand(cmd,false);
 //   unsigned long int temp=millis();
@@ -471,9 +493,13 @@ bool SIM::getProgramSize()
 //     return false;
 // }
 
-bool SIM::downloadFirmware()
+
+bool PSIM::downloadFirmware()
 {
+    // unsigned long int size;
+    // EEPROM.get(prgSizeAddress, size);
     unsigned long int size=eeprom1->getProgramSize();
+    
     unsigned long int temp;
     
     //  +FTPGETTOFS: 0,2396
@@ -486,7 +512,11 @@ bool SIM::downloadFirmware()
     // AT+FTPGETTOFS=0,"m.hex"\r\n
     cmd="AT"; 
     cmd=cmd+m1;
-    cmd=cmd+ "=0,\"m.hex\"\r\n";
+    // cmd=cmd+ "=0,\"m.hex\"\r\n";
+    cmd=cmd+ "=0,\"";
+    cmd = cmd + getHexFileName();
+    cmd = cmd +  "\"\r\n";
+
     temp=millis();
     sendCommand(cmd,false);
     while(millis()-temp<120000L)
@@ -510,26 +540,26 @@ bool SIM::downloadFirmware()
     // return extendedSendCommand(cmd,v1,25,60000);           
 }
 
-bool SIM::isGPRSConnected()
+bool PSIM::isGPRSConnected()
 {
     
   //+SAPBR: 1,1,"0.0.0.0"
-  sendCommand("AT+SAPBR=2,1\r\n",false);
+  sendCommand(F("AT+SAPBR=2,1\r\n"),false);
   unsigned long int temp =millis();
   while(millis()-temp<5000)
-	{
-		if(_SSerial->available())
-		{
-			String str=_SSerial->readStringUntil('\n');
+  {
+    if(_SSerial->available())
+    {
+      String str=_SSerial->readStringUntil('\n');
       #ifndef disable_debug
           _NSerial->println(str);
       #endif
-			if(stringContains(str,"+SAPBR: 1,3",11,str.length()-1))
+      if(stringContains(str,F("+SAPBR: 1,3"),11,str.length()-1))
         return false;
-      else if(stringContains(str,"+SAPBR: 1,1",11,str.length()-1))
-				return true;
-		}
-	}
+      else if(stringContains(str,F("+SAPBR: 1,1"),11,str.length()-1))
+        return true;
+    }
+  }
   return false;
   //removed code from here to send speicfic command, and wait for the needed response for specified time..
   // String str="AT+SAPBR=2,1\r\n";
@@ -537,12 +567,13 @@ bool SIM::isGPRSConnected()
   // return extendedSendCommand(str,str2,11,5000);
 }
 
-bool SIM::prepareForFirmwareUpdate(String &ipaddress)
+bool PSIM::prepareForFirmwareUpdate(String &ipaddress)
 {
-	bool gprs=false;
-	if(!(gprs=isGPRSConnected()))
-	{	
-    if(startGPRS("bsnlnet"))
+  bool gprs=false;
+  if(!(gprs=isGPRSConnected()))
+  { 
+    // if(startGPRS("bsnlnet"))
+    if(startGPRS(getAPN()))
     {
       byte cnt = 12;
       while(--cnt)
@@ -555,31 +586,31 @@ bool SIM::prepareForFirmwareUpdate(String &ipaddress)
           break;
       }
     }
-	}
+  }
 
-	if(gprs)
-	{
-		if(connectToFTP(ipaddress))
-		{
-				if(getProgramSize())
-				{
-					if(downloadFirmware())
-					{
-						return true;
-					}
-				}
-		}
-	}
-	return false;
+  if(gprs)
+  {
+    if(connectToFTP(ipaddress))
+    {
+        if(getProgramSize())
+        {
+          if(downloadFirmware())
+          {
+            return true;
+          }
+        }
+    }
+  }
+  return false;
 }
 
 
-// void SIM::watchdogConfig(uint8_t x) {
+// void PSIM::watchdogConfig(uint8_t x) {
 //   WDTCSR = _BV(WDCE) | _BV(WDE);
 //   WDTCSR = x;
 // }
 
-// void SIM::watchdogReset() {
+// void PSIM::watchdogReset() {
 //   __asm__ __volatile__ (
 //     "wdr\n"
 //   );
@@ -593,18 +624,25 @@ bool SIM::prepareForFirmwareUpdate(String &ipaddress)
 
 // #asm("jmp 0xE00") // jump to bootloader
 
-void SIM::jumpToBootloader() // Restarts program from beginning but does not reset the peripherals and registers
+void PSIM::jumpToBootloader() // Restarts program from beginning but does not reset the peripherals and registers
 {
 asm volatile ("  jmp 0X7800");  //bootloader vector start address set using BOOTSZ fuse. 
 }  
-// void SIM::jumpToBootloader()
+// void PSIM::jumpToBootloader()
 // {
   // __asm__ __volatile__ (
     // "jmp 0x7800\n"
   // );
 // }
 
-void SIM::initRestartSeq()
+// void PSIM::updateFirmware(bool temp,bool verify)
+// {
+//   EEPROM.put(prgUpdateRequestAddress, (byte)temp); 
+//   EEPROM.put(prgUpdateTryAddress, 0x00);
+//   EEPROM.put(VerifyStatusAddress, (byte)!verify);
+// }
+
+void PSIM::initRestartSeq()
 {
     sendBlockingATCommand(F("AT+CSCLK=0\r\n"));
     sendBlockingATCommand(F("AT&W\r\n"));
@@ -619,7 +657,7 @@ void SIM::initRestartSeq()
     jumpToBootloader();
 }
 
-bool SIM::checkPrgReq(String str,bool noMsg)
+bool PSIM::checkPrgReq(String str,bool noMsg)
 {
   byte p=0;
   isMsgFromAdmin=true;
@@ -642,6 +680,8 @@ bool SIM::checkPrgReq(String str,bool noMsg)
       else
       {
           stopGPRS();
+          // programSizeSet=false;
+          // updateFirmware(false,false);
           eeprom1->programSizeSet=false;
           eeprom1->updateFirmware(false,false);
           #ifndef disable_debug
@@ -650,7 +690,7 @@ bool SIM::checkPrgReq(String str,bool noMsg)
           isMsgFromAdmin=true;
           if(!noMsg) sendSMS("ED",true);
       }
-          return true;
+      return true;
   }
   else if(stringContains(str,F("PRGSIZE"),7,str.length()-1))
   {
@@ -660,15 +700,22 @@ bool SIM::checkPrgReq(String str,bool noMsg)
   {
     p=0x02;
   }
+  else
+  {
+      p=dCheckPrgReq(str,noMsg);
+  }
 
   if(p>0)
   {
-      eeprom1->saveProgramSize(str.toInt());
+      if((0xF0 & p) == 0x00)
+        eeprom1->saveProgramSize(str.toInt());
+
+        // saveProgramSize(str.toInt());
       String tempStr;
       tempStr = F("OK : ");
       tempStr = tempStr + str;
       if(!noMsg) sendSMS(tempStr,true);
-      if(p==0x02)
+      if((0x0F & p)==0x02)
         initRestartSeq();
       return true;
   }
@@ -676,7 +723,7 @@ bool SIM::checkPrgReq(String str,bool noMsg)
   return false;
 }
 
-void SIM::stopCallWaiting()
+void PSIM::stopCallWaiting()
 {
     sendBlockingATCommand(F("AT+CCWA=0\r\n"));
 }
@@ -684,7 +731,7 @@ void SIM::stopCallWaiting()
 
 // void(CTestFncPtr::*Switch)(char * charData);
 
-bool SIM::getBlockingResponse(String &cmd,bool (SIM::*func)(String &))
+bool PSIM::getBlockingResponse(String &cmd,bool (PSIM::*func)(String &))
 {
   unsigned long temp = millis();
   sendCommand(cmd,true);
@@ -703,7 +750,7 @@ bool SIM::getBlockingResponse(String &cmd,bool (SIM::*func)(String &))
   return false;
 }
 
-void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
+void PSIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
 {
   isMsgFromAdmin=admin;
   String tempStr=str;
@@ -736,31 +783,11 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
       stopCallWaiting();
       done=true;
     }
+    else if (str.startsWith(F("RESET")))// stringContains(str, F("RESET"), 5, str.length() - 1))
+      jumpToBootloader();   
     else if (str.startsWith(F("CLEARALL")))// (stringContains(str, F("CLEARALL"), 8, str.length() - 1))) //if (str == "CLEARALL" && admin)
     {
       eeprom1->clearNumbers(admin);
-      done=true;
-    }
-    else if (str.startsWith(F("DEFAULT"))) //stringContains(str, F("DEFAULT"), 7, str.length() - 1))
-    {
-      eeprom1->saveAutoStartSettings(false);
-      eeprom1->saveDNDSettings(false);
-      eeprom1->saveResponseSettings('C');
-      eeprom1->saveAutoStartTimeSettings(50);
-      done=true;
-    }
-    else if (str.startsWith(F("RESET")))// stringContains(str, F("RESET"), 5, str.length() - 1))
-      jumpToBootloader();
-    else if (str.startsWith(F("AUTOON")))// stringContains(str, F("AUTOON"), 6, str.length() - 1))
-    {
-      eeprom1->saveAutoStartSettings(true);  //set AutoStart to True in EEPROM
-      motor1->resetAutoStart(true);
-      done=true;
-    }
-    else if (str.startsWith(F("AUTOOFF"))) //stringContains(str, F("AUTOOFF"), 7, str.length() - 1))
-    {
-      eeprom1->saveAutoStartSettings(false);  //set AUtoStart to False in EEPROM
-      motor1->resetAutoStart(true);
       done=true;
     }
     else if (str.startsWith(F("DNDON")))//stringContains(str, F("DNDON"), 5, str.length() - 1))
@@ -791,13 +818,13 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
       batPer = net = 0xFF;
       
       str = F("AT+CSQ");
-      if(getBlockingResponse(str,&SIM::isCSQ))
+      if(getBlockingResponse(str,&PSIM::isCSQ))
       {
         net = str.toInt()*3;
       }
       delay(5);
       str = F("AT+CBC");
-      if(getBlockingResponse(str,&SIM::isCBC))
+      if(getBlockingResponse(str,&PSIM::isCBC))
       {
         batPer = (str.substring(0,str.lastIndexOf(","))).toInt();
       }
@@ -816,19 +843,6 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
     {
       eeprom1->saveAlterNumberSetting(false);
       done=true;
-    }
-    else if (stringContains(str, F("AUTOTIME"), 8, str.length() - 1))
-    {
-      if (isNumeric(str))
-      {
-        data = str.toInt();
-        if (data < 50) data = 50;
-        if (data > 480) data = 480;
-        eeprom1->saveAutoStartTimeSettings(data);  //Store in EEPROM the AUTO START TIME
-        tempStr = F("AUTOTIME");
-        tempStr = tempStr + data;
-        done=true;
-      }
     }
     else if (stringContains(str, F("BAL"), 3, str.length() - 1))
     {
@@ -878,6 +892,10 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
 #endif
       }
     }
+    else 
+    {
+      addOperateOnMsg(str,admin,tempStr,done,processed);
+    }
     // else if (stringContains(str, F("NET"), 3, str.length() - 1))
     // {
     //   processed=true;
@@ -898,7 +916,7 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
 }
 
 
-// bool SIM::getBalance()
+// bool PSIM::getBalance()
 // {
       // String s2;
       // s2 = F("AT+CUSD=1,\"");
@@ -907,22 +925,22 @@ void SIM::operateOnMsg(String str, bool admin = false,bool noMsg=false)
       // sendCommand(s2, true);
 // }
 
-inline bool SIM::isCBC(String &str)
+inline bool PSIM::isCBC(String &str)
 {
   return(stringContains(str,"+CBC:",str.indexOf(",")+1,str.length()-1));
 }
 
-inline bool SIM::isCUSD(String &str)
+inline bool PSIM::isCUSD(String &str)
 {
   return stringContains(str, "+CUSD:", 6, str.length() - 1);
 }
 
-inline bool SIM::isCSQ(String &str)
+inline bool PSIM::isCSQ(String &str)
 {
   return stringContains(str, "+CSQ", 5, str.length() - 3);
 }
 
-inline void SIM::sendReadMsg(String str)
+inline void PSIM::sendReadMsg(String str)
 {
   String s;
   s = "AT+CMGR=";
@@ -930,19 +948,20 @@ inline void SIM::sendReadMsg(String str)
   sendCommand(s, true);
 }
 
-inline bool SIM::isMsgBody(String &str)
+inline bool PSIM::isMsgBody(String &str)
 {
   return stringContains(str, "+CMGR:", 24, 34);
 }
 
-inline bool SIM::isAdmin(String str)
+inline bool PSIM::isAdmin(String str)
 {
   return (str == adminNumber);
 }
 
-void SIM::gotMsgBody(String &str)
+void PSIM::gotMsgBody(String &str)
 {
   bool admin = isAdmin(str);
+  // if (admin || isPrimaryNumber(str))//eeprom1->isPrimaryNumber(str))
   if (admin || eeprom1->isPrimaryNumber(str))
   {
     str = readString(); //_SSerial->readStringUntil('\n');
@@ -950,7 +969,6 @@ void SIM::gotMsgBody(String &str)
     _NSerial->print("MSG:");
     _NSerial->println(str);
 #endif
-
 
     bool noMsg=false;
     if(str.startsWith("#"))
@@ -970,18 +988,13 @@ void SIM::gotMsgBody(String &str)
   delAllMsg();
 }
 
-bool SIM::isNewMsg(String &str)
+bool PSIM::isNewMsg(String &str)
 {
   return stringContains(str, "+CMTI:", 12, str.length() - 1);
 }
 
-void SIM::setClassReference(S_EEPROM* e1, Motor_MGR* m1)
-{
-  eeprom1 = e1;
-  motor1 = m1;
-}
 
-bool SIM::initialize()
+bool PSIM::initialize()
 {
   byte attempts = 0;
 try_again:
@@ -1018,25 +1031,26 @@ try_again:
   return false;
 }
 
-bool SIM::isNumber(String &str)
+bool PSIM::isNumber(String &str)
 {
   return (stringContains(str, "+CLIP: \"", 11, 21));
 }
 
-bool SIM::checkNumber(String number)
+bool PSIM::checkNumber(String number)
 {
 #ifndef disable_debug
   _NSerial->print("no:");
   _NSerial->println(number);
 #endif
 
+  // if (isAdmin(number) || (checkExists(number)!=0xFF))//(eeprom1->checkExists(number)!=0xFF))
   if (isAdmin(number) || (eeprom1->checkExists(number)!=0xFF))
     return true;
 
   return false;
 }
 
-void SIM::acceptCommands()
+void PSIM::acceptCommands()
 {
   if (!commandsAccepted)
   {
@@ -1058,7 +1072,7 @@ void SIM::acceptCommands()
   }
 }
 
-void SIM::rejectCommands()
+void PSIM::rejectCommands()
 {
 #ifndef disable_debug
   _NSerial->print("com");
@@ -1069,7 +1083,7 @@ void SIM::rejectCommands()
   commandsAccepted = false;
 }
 
-void SIM::sendCommand(char cmd, bool newline = false)
+void PSIM::sendCommand(char cmd, bool newline = false)
 {
   acceptCommands();
   if (!newline)
@@ -1078,7 +1092,7 @@ void SIM::sendCommand(char cmd, bool newline = false)
     _SSerial->println(cmd);
 }
 
-void SIM::sendCommand(String cmd, bool newline = false)
+void PSIM::sendCommand(String cmd, bool newline = false)
 {
   acceptCommands();
   if (cmd == "")
@@ -1092,7 +1106,7 @@ void SIM::sendCommand(String cmd, bool newline = false)
   }
 }
 
-bool SIM::sendBlockingATCommand(String cmd,bool extendTime)
+bool PSIM::sendBlockingATCommand(String cmd,bool extendTime)
 {
   sendCommand(cmd);
 #ifndef disable_debug
@@ -1121,7 +1135,7 @@ bool SIM::sendBlockingATCommand(String cmd,bool extendTime)
   return false;
 }
 
-String SIM::readString()
+String PSIM::readString()
 {
   String str = "";
   if (_SSerial->available() >  0)
@@ -1135,12 +1149,12 @@ String SIM::readString()
   return str;
 }
 
-bool SIM::matchString(String m1, String m2)
+bool PSIM::matchString(String m1, String m2)
 {
   return (m1 == m2);
 }
 
-bool SIM::stringContains(String &sstr, String mstr, byte sstart, byte sstop)
+bool PSIM::stringContains(String &sstr, String mstr, byte sstart, byte sstop)
 {
   if (sstr.startsWith(mstr))
   {
@@ -1150,17 +1164,17 @@ bool SIM::stringContains(String &sstr, String mstr, byte sstart, byte sstop)
   return false;
 }
 
-bool SIM::isRinging(String str)
+bool PSIM::isRinging(String str)
 {
   return (str == "RING\r");
 }
 
-bool SIM::isDTMF(String &str)
+bool PSIM::isDTMF(String &str)
 {
   return stringContains(str, "+DTMF: ", 7, 8);
 }
 
-bool SIM::isCut(String str)
+bool PSIM::isCut(String str)
 {
   if (currentStatus == 'I' && (currentCallStatus == 'I' || currentCallStatus == 'O'))
   {
@@ -1182,12 +1196,12 @@ bool SIM::isCut(String str)
   return false;
 }
 
-bool SIM::isSoundStop(String str)
+bool PSIM::isSoundStop(String str)
 {
   return (matchString(str, "+CREC: 0\r"));
 }
 
-char SIM::callState(String str)
+char PSIM::callState(String str)
 {
 #ifndef disable_debug
   _NSerial->print("str:");
@@ -1208,7 +1222,7 @@ char SIM::callState(String str)
 }
 
 
-void SIM::makeCall()
+void PSIM::makeCall()
 {
   inCall=true;  
   acceptCommands();
@@ -1216,6 +1230,7 @@ void SIM::makeCall()
 
   String command;
   command = "ATD+91";
+  // command.concat(getActiveNumber());
   command.concat(eeprom1->getActiveNumber());
   command.concat(";");
   sendCommand(command, true);
@@ -1235,7 +1250,7 @@ void SIM::makeCall()
   // attemptsToCall++;
 }
 
-void SIM::endCall()
+void PSIM::endCall()
 {
   nr = 0;
   inCall=false;
@@ -1267,13 +1282,13 @@ void SIM::endCall()
 #endif
 }
 
-void SIM::setObtainEvent()
+void PSIM::setObtainEvent()
 {
   if (!obtainNewEvent  && millis() - obtainEventTimer > 1000)
     obtainNewEvent = true;
 }
 
-void SIM::acceptCall()
+void PSIM::acceptCall()
 {
   callAccepted = true;
   _SSerial->flush();
@@ -1284,7 +1299,7 @@ void SIM::acceptCall()
   playSound('M');
 }
 
-void SIM::sendSMS(String msg = "", bool predefMsg = false)
+void PSIM::sendSMS(String msg = "", bool predefMsg = false)
 {
   inCall=true;
   _SSerial->flush();
@@ -1292,22 +1307,10 @@ void SIM::sendSMS(String msg = "", bool predefMsg = false)
 
   if (!predefMsg)
   {
-    switch (actionType)
+    if(!makeSMSString(responseString,actionType))
     {
-      case 'S':
-        responseString = STR_MOTOR;
-        responseString += STR_ON;
-        break;
-      case 'O':
-      case 'U':
-      case 'C':
-      case 'F':
-        responseString = STR_MOTOR;
-        responseString += STR_OFF;
-        break;
-      default:
-        return;
-    }
+      return;
+    }      
   }
   else
     responseString = msg;
@@ -1321,6 +1324,8 @@ void SIM::sendSMS(String msg = "", bool predefMsg = false)
     command.concat(adminNumber);
   else
     command.concat(eeprom1->getActiveNumber());
+    
+    // command.concat(getActiveNumber());
 
   command.concat("\"");
 
@@ -1348,46 +1353,21 @@ void SIM::sendSMS(String msg = "", bool predefMsg = false)
   inCall=false;
 }
 
-void SIM::delay(byte time)
+void PSIM::delay(byte time)
 {
   unsigned long temp = millis();
   while (millis() - temp < time*100)
   {}
 }
-void SIM::operateDTMF(String str)
-{
-  if (str == "1") //Motor On
-  {
-    currentOperation = 'S';
-    subDTMF();
-    motor1->startMotor(true);
-  }
-  else if (str == "2") //Motor Off
-  {
-    currentOperation = 'O';
-    subDTMF();
-    motor1->stopMotor(true);
-  }
-  else if (str == "3") //Status
-  {
-    currentOperation = 'T';
-    subDTMF();
-    motor1->statusOnCall();
-  }
-  // else if (str == "4") //Set AUTOTIMER ON
-  // eeprom1->saveAutoStartSettings(true);  //set AutoStart to True in EEPROM
-  // else if (str == "5") //Set AUTOTIMER OFF
-  // eeprom1->saveAutoStartSettings(false);  //set AUtoStart to False in EEPROM
-}
 
-inline void SIM::subDTMF()
+void PSIM::subDTMF()
 {
   //    // starPresent=true;
   callCutWait = millis();
   stopSound();
 }
 
-void SIM::operateRing()
+void PSIM::operateRing()
 {
   nr++;
   if (nr <= 2)
@@ -1421,12 +1401,12 @@ void SIM::operateRing()
   }
 }
 
-bool SIM::playSoundElligible()
+bool PSIM::playSoundElligible()
 {
   return (bplaySound && ((millis() - soundWait) > (soundWaitTime * 100)));
 }
 
-void SIM::triggerPlaySound()
+void PSIM::triggerPlaySound()
 {
   _SSerial->flush();
   sendCommand(F("AT+CREC=4,\""));
@@ -1437,7 +1417,7 @@ void SIM::triggerPlaySound()
   bplaySound = false;
 }
 
-// void SIM::playSoundAgain(String str)
+// void PSIM::playSoundAgain(String str)
 // {
 //   if (isSoundStop(str))
 //   {
@@ -1452,7 +1432,7 @@ void SIM::triggerPlaySound()
 //   }
 // }
 
-void SIM::playSound(char actionType, bool newAction)
+void PSIM::playSound(char actionType, bool newAction)
 {
   _SSerial->flush();
   stopSound();
@@ -1466,31 +1446,35 @@ void SIM::playSound(char actionType, bool newAction)
   playFile = actionType;
 }
 
-void SIM::stopSound()
+void PSIM::stopSound()
 {
   _SSerial->flush();
   sendCommand(F("AT+CREC=5\r"), true);
   _SSerial->flush();
 }
 
-bool SIM::callTimerExpire()
+bool PSIM::callTimerExpire()
 {
   return ((millis() - callCutWait) >= (callCutWaitTime * 100));
 }
 
-void SIM::makeResponseAction()
+void PSIM::makeResponseAction()
 {
-  makeResponse = false;
+  // makeResponse = false;
+  // byte b= getResponseSetting();
+
+
+  // if (b == 'A' || b == 'C')
   if (eeprom1->RESPONSE == 'A' || eeprom1->RESPONSE == 'C')
     makeCall();
 }
 
-bool SIM::registerEvent(char eventType)
+bool PSIM::registerEvent(char eventType)
 {
   if (!initialized)
   {
 #ifndef disable_debug
-    _NSerial->println("NO SIM");
+    _NSerial->println("NO PSIM");
 #endif
     return true;
   }
@@ -1514,12 +1498,12 @@ bool SIM::registerEvent(char eventType)
 }
 
 
-bool SIM::rejectCommandsElligible()
+bool PSIM::rejectCommandsElligible()
 {
   return (commandsAccepted && millis() - tempAcceptCommandTime >= (acceptCommandsTime * 100));
 }
 
-void SIM::checkNetwork(String str)
+void PSIM::checkNetwork(String str)
 {
   if (str == F("+CPIN: NOT READY\r"))
   {
@@ -1528,7 +1512,7 @@ void SIM::checkNetwork(String str)
   }
 }
 
-// void SIM::networkCounterMeasures()
+// void PSIM::networkCounterMeasures()
 // {
 //   // _SSerial->flush();
 //   // sendBlockingATCommand(F("AT+CFUN=1,1\r\n"));
@@ -1540,64 +1524,29 @@ void SIM::checkNetwork(String str)
 //   // {}
 // }
 
-void SIM::setMotorMGRResponse(char response)
-{
-  if (currentOperation == 'S') //start Motor
-  {
-    // responseToAction = true;
-    if (response == 'L')
-      playSound('N');  //cannot start motor
-    else if (response == 'O')
-      playSound('1');  //motor is already on
-    else if (response == 'D')
-      playSound('S');  //motor has started
-    // endCall();
-  }
-  else if (currentOperation == 'O') //switch off motor
-  {
-    // responseToAction = true;
-    if (response == 'L')
-      playSound('P');    //cannot stop motor
-    else if (response == 'O')
-      playSound('2');  //motor is already off
-    else if (response == 'D')
-      playSound('O');  //motor has stopped
-    // endCall();
-  }
-  else if (currentOperation = 'T')
-  {
-    // responseToAction = true;
-    if (response == 'L') //motor off, no light
-      playSound('L');
-    else if (response == 'A') //motor off, light on
-      playSound('A');
-    // else if (response == 'B') //motor off, light on
-      // playSound('B');
-    else if (response == 'O') //motor off, light on
-      playSound('3');
-    else if (response == 'D')
-      playSound('1');  //motor is on
-  }
-}
 
-inline bool SIM::isCallReady(String str)
+
+inline bool PSIM::isCallReady(String str)
 {
   return matchString(str, "Call Ready\r");
 }
 
-bool SIM::checkSleepElligible()
+bool PSIM::checkSleepElligible()
 {
   return(!commandsAccepted  && checkNotInCall());
 }
 
-bool SIM::checkNotInCall()
+bool PSIM::checkNotInCall()
 {
  return ( !sendCUSDResponse     &&  currentStatus=='N'  
   &&  currentCallStatus=='N'  &&  obtainNewEvent
-  &&  !makeResponse           &&  !freezeIncomingCalls);
+  &&  !freezeIncomingCalls    && addCheckNotInCall());
+
+  // &&  !makeResponse           &&  !freezeIncomingCalls 
+
 }
 
-// void SIM::setNetLight(byte light)
+// void PSIM::setNetLight(byte light)
 // {
 //   bool isSleep=commandsAccepted;
 //     if(light==L_REGULAR)
@@ -1608,31 +1557,20 @@ bool SIM::checkNotInCall()
 //       rejectCommands();
 // }
 
-bool SIM::busy()
+bool PSIM::busy()
 {
   return (inCall || inInterrupt);
 }
 
-bool inline SIM::checkEventGone()
+bool inline PSIM::checkEventGone()
 {
   return (millis() - tempInterruptTime > 2000);
 }
 
-String SIM::makeStatusMsg(byte battery, byte network)
+String PSIM::makeStatusMsg(byte battery, byte network)
 {
-      byte t3 = motor1->checkLineSensors();
-      bool t5 = motor1->motorState();
       String resp;
-
-      if (eeprom1->AUTOSTART)
-        resp = F("AUTOON");
-      else
-        resp = F("AUTOOFF");
-
-      resp = resp + "\nAC:";
-      resp = resp + (t3==AC_3PH ? F(" ON\n") : (t3==AC_2PH ? F(" 2 PHASE\n") : F(" OFF\n")));
-      resp = resp + F("Motor:");
-      resp = resp + (t5 ? F(" ON\n") : F(" OFF\n"));
+      addTextToStatusMsg(resp);
       if(battery!=0xFF)
       {
         resp = resp + F("\nBat%:");
@@ -1646,7 +1584,7 @@ String SIM::makeStatusMsg(byte battery, byte network)
       return resp;
 }
 
-void SIM::checkRespSMS(char t1)
+void PSIM::checkRespSMS(char t1)
 {
   if (!callAccepted && eeprom1->RESPONSE=='A')
   {
@@ -1659,22 +1597,25 @@ void SIM::checkRespSMS(char t1)
   }
 }
 
-void SIM::update()
+void PSIM::update()
 {
   if(inInterrupt && checkEventGone())
     inInterrupt=false;
 
-  if (rejectCommandsElligible() && !motor1->ACPowerState())
+  // if (rejectCommandsElligible() && !motor1->ACPowerState())
+  if (rejectCommandsElligible() && addCheckRejectCommands())
   {
     rejectCommands();
   }
+
+  addUpdate();
 
   if (currentStatus == 'N')
   {
     setObtainEvent();
 
-    if (makeResponse)
-      makeResponseAction();
+    // if (makeResponse)
+      // makeResponseAction();
   }
   else if (currentStatus == 'I' || currentStatus == 'R')
   {
@@ -1693,6 +1634,8 @@ void SIM::update()
   {
     String str;
     str = readString();
+
+    addUpdateStringData(str);
 
     if(isCUSD(str) && sendCUSDResponse)    //bal
     {
@@ -1772,9 +1715,9 @@ void SIM::update()
       }
       else if (callState(str) == 'I') //else if (stringContains(str, "+CLCC: 1,0,0", 11, 12) == true)
       {
-				#ifndef disable_debug
+        #ifndef disable_debug
         _NSerial->println("Accept");
-				#endif
+        #endif
         callCutWait = millis();
         currentStatus = 'I';
         currentCallStatus = 'O';

@@ -15,29 +15,38 @@
 */
 
 #ifndef disable_debug
-	#ifdef software_SIM
-		Motor_MGR::Motor_MGR(HardwareSerial *serial, SIM* sim1, S_EEPROM* eeprom1)
-		{
-			_NSerial = serial;
-			_NSerial->begin(19200);
-			anotherConstructor(sim1, eeprom1);
-		}
+	#ifndef __AVR_ATmega128__
+		#ifdef software_SIM
+			Motor_MGR::Motor_MGR(HardwareSerial *serial, DSIM* sim1, S_EEPROM* eeprom1)
+			{
+				_NSerial = serial;
+				_NSerial->begin(19200);
+				anotherConstructor(sim1, eeprom1);
+			}
+		#else
+			Motor_MGR::Motor_MGR(SoftwareSerial *serial, DSIM* sim1, S_EEPROM* eeprom1)
+			{
+				_NSerial = serial;
+				_NSerial->begin(19200);
+				anotherConstructor(sim1, eeprom1);
+			}
+		#endif
 	#else
-		Motor_MGR::Motor_MGR(SoftwareSerial *serial, SIM* sim1, S_EEPROM* eeprom1)
+		Motor_MGR::Motor_MGR(HardwareSerial *serial, DSIM* sim1, S_EEPROM* eeprom1)
 		{
 			_NSerial = serial;
 			_NSerial->begin(19200);
 			anotherConstructor(sim1, eeprom1);
-		}
+		}			
 	#endif
 #else
-	Motor_MGR::Motor_MGR(SIM* sim1, S_EEPROM* eeprom1)
+	Motor_MGR::Motor_MGR(DSIM* sim1, S_EEPROM* eeprom1)
 	{
 		anotherConstructor(sim1, eeprom1);
 	}
 #endif
 
-void Motor_MGR::anotherConstructor(SIM* sim1, S_EEPROM* eeprom1)
+void Motor_MGR::anotherConstructor(DSIM* sim1, S_EEPROM* eeprom1)
 {
   this->sim1 = sim1;
   this->eeprom1 = eeprom1;
@@ -262,7 +271,7 @@ void Motor_MGR::operateOnEvent()
 		// waitCheckACTimerOn = false;		//stop any unknown reason of motor off event
 		stopMotor(false,true);
 		setLED(TURN_OFF);
-		simEventTemp[6] = sim1->registerEvent('C'); //report To SIM Motor Off due to POWER CUT OFF
+		simEventTemp[6] = sim1->registerEvent('C'); //report To DSIM Motor Off due to POWER CUT OFF
 		// _NSerial->println("Got C");
 	}
 	else if ((tacPhase && ACPowerState()) &&
@@ -276,7 +285,7 @@ void Motor_MGR::operateOnEvent()
 		  _NSerial->print("Got");
 		  _NSerial->println("U");
 	#endif
-	  //report to SIM Motor Off due to Unknown Reason
+	  //report to DSIM Motor Off due to Unknown Reason
 	  // simEventTemp[2]=sim1->registerEvent('U');
 	  // stopMotor();
 	}
@@ -308,7 +317,7 @@ void Motor_MGR::operateOnEvent()
 		if (startTimerOn)
 		  startTimerOn = false;
 		setLED(TURN_ON);
-		simEventTemp[7] = sim1->registerEvent('S');	//register To SIM Motor has started
+		simEventTemp[7] = sim1->registerEvent('S');	//register To DSIM Motor has started
 	  }
 	  else
 	  {
@@ -373,27 +382,27 @@ void Motor_MGR::operateOnStableLine()
 	else
 	{
 	  if (!eeprom1->DND)	//if DND off then
-		simEventTemp[4] = sim1->registerEvent('G'); //register TO SIM AC power ON
+		simEventTemp[4] = sim1->registerEvent('G'); //register TO DSIM AC power ON
 	}
   }
   else if (temp == AC_2PH) //Got Power in 2 phase
   {
   	setLED(TURN_OFF);  	
 	if (!eeprom1->DND)	//if DND off then
-	  simEventTemp[9] = sim1->registerEvent('A'); //register TO SIM 2 phase power ON
+	  simEventTemp[9] = sim1->registerEvent('A'); //register TO DSIM 2 phase power ON
   }
   else if (temp == AC_OFF)	//Lost Power in All Phase
   {
   	setLED(TURN_OFF);
 	if (!eeprom1->DND)		//if DND off
-	  simEventTemp[5] = sim1->registerEvent('L'); //register To SIM AC Power OFF
+	  simEventTemp[5] = sim1->registerEvent('L'); //register To DSIM AC Power OFF
   }
 
   // else if (!semiState && temp == AC_1PH)		//Got Power in 1 phase
   // {
 	// semiState = true;
 	// if (!eeprom1->DND)	//if DND off then
-	  // simEventTemp[10] = sim1->registerEvent('A'); //register TO SIM 1 phase power ON
+	  // simEventTemp[10] = sim1->registerEvent('A'); //register TO DSIM 1 phase power ON
   // }
 }
 
@@ -415,7 +424,7 @@ bool Motor_MGR::waitCheckACTimerOver()
 void Motor_MGR::unknownMotorOff()
 {
   // waitCheckACTimerOn = false;
-  //report to SIM Motor Off due to Unknown Reason
+  //report to DSIM Motor Off due to Unknown Reason
   stopMotor(false,true);
   simEventTemp[2] = sim1->registerEvent('U');
 }
@@ -430,7 +439,7 @@ inline void Motor_MGR::operateOnSinglePhasing()
 	setLED(TURN_OFF);
   	stopMotor(false,true);
   	simEventTemp[3] = sim1->registerEvent('F');
-  //reportSinglePhasing TO SIM..
+  //reportSinglePhasing TO DSIM..
 }
 
 void Motor_MGR::startMotor(bool commanded)
@@ -509,7 +518,7 @@ void Motor_MGR::terminateStopRelay()
 		sim1->setMotorMGRResponse('D');		//motor has stopped
 	  }
 	  // else
-	  // simEventTemp[8] = sim1->registerEvent('O'); //register TO SIM motor has turned off
+	  // simEventTemp[8] = sim1->registerEvent('O'); //register TO DSIM motor has turned off
 	}
 	else	//motor is still on, with either phase 1 or phase 2 feedback on with ACPhase on
 	{
@@ -520,7 +529,7 @@ void Motor_MGR::terminateStopRelay()
 	  }
 	  else
 		simEventTemp[1] = sim1->registerEvent('P');
-	  //register to SIM cannot turn off motor due to some problem
+	  //register to DSIM cannot turn off motor due to some problem
 	}
   }
 }
@@ -553,11 +562,11 @@ void Motor_MGR::terminateStartRelay()
 	else
 	{
 	  if (getMotorState())
-		simEventTemp[7] = sim1->registerEvent('S');// ;//register To SIM Motor has started
+		simEventTemp[7] = sim1->registerEvent('S');// ;//register To DSIM Motor has started
 	  else
 	  {
 		stopMotor(false, true);
-		simEventTemp[0] = sim1->registerEvent('N');//register To SIM motor not started due to phase failure
+		simEventTemp[0] = sim1->registerEvent('N');//register To DSIM motor not started due to phase failure
 	  }
 	}
   }

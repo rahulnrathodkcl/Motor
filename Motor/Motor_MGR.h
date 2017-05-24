@@ -10,15 +10,15 @@
 
 #include "Definitions.h"
 #include "S_EEPROM.h"
-#include "SIM.h"
+#include "DSIM.h"
 #include <Arduino.h>
 
-class SIM;
+class DSIM;
 
 class Motor_MGR
 {
     S_EEPROM* eeprom1;
-    SIM* sim1;
+    DSIM* sim1;
 
     bool simEventTemp[10];
     char simEvent[10];
@@ -58,7 +58,7 @@ class Motor_MGR
     unsigned long int waitStableLineTimer;
     byte waitStableLineTime;
 
-    void anotherConstructor(SIM* sim1, S_EEPROM* eeprom1);
+    void anotherConstructor(DSIM* sim1, S_EEPROM* eeprom1);
     void readSensorState(bool &p1, bool &p2, bool &p3, bool &p4);
     void updateSensorState(bool &p1, bool &p2, bool &p3, bool &p4);
     void triggerAutoStart();
@@ -90,23 +90,31 @@ class Motor_MGR
 
 
 #ifndef disable_debug
-#ifdef software_SIM
-    HardwareSerial* _NSerial;
-#else
-    SoftwareSerial* _NSerial;
-#endif
+    #ifndef __AVR_ATmega128__
+        #ifdef software_SIM
+            HardwareSerial* _NSerial;
+        #else
+            SoftwareSerial* _NSerial;
+        #endif
+    #else
+        HardwareSerial* _NSerial;
+    #endif
 #endif
 
   public:
 
 #ifndef disable_debug
-#ifdef software_SIM
-    Motor_MGR(HardwareSerial *s, SIM* sim1, S_EEPROM* eeprom1);
+    #ifndef __AVR_ATmega128__
+        #ifdef software_SIM
+            Motor_MGR(HardwareSerial *s, DSIM* sim1, S_EEPROM* eeprom1);
+        #else
+            Motor_MGR(SoftwareSerial *s, DSIM* sim1, S_EEPROM* eeprom1);
+        #endif
+    #else
+        Motor_MGR(HardwareSerial *s, DSIM* sim1, S_EEPROM* eeprom1);
+    #endif
 #else
-    Motor_MGR(SoftwareSerial *s, SIM* sim1, S_EEPROM* eeprom1);
-#endif
-#else
-    Motor_MGR(SIM* sim1, S_EEPROM* eeprom1);
+    Motor_MGR(DSIM* sim1, S_EEPROM* eeprom1);
 #endif
 
     bool eventOccured;
@@ -116,8 +124,8 @@ class Motor_MGR
     bool ACFeedbackState();
     bool ACPowerState();
     bool AllPhaseState();
-    // bool getChargeState();			//used by SIM
-    // unsigned short int getBatVolt();				//used by SIM
+    // bool getChargeState();			//used by DSIM
+    // unsigned short int getBatVolt();				//used by DSIM
     byte checkLineSensors();
     bool getMotorState();
     void startMotor(bool commanded = false);
