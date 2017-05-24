@@ -44,6 +44,11 @@ String DSIM::getAPN()
 // 	return eeprom1->getActiveNumber();
 // }
 
+void DSIM::enableRingLevelInterrupt()
+{
+  
+}
+
 bool DSIM::makeSMSString(String &responseString,char actionType)
 {
 	switch (actionType)

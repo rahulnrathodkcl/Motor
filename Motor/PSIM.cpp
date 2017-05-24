@@ -1562,9 +1562,10 @@ bool PSIM::busy()
   return (inCall || inInterrupt);
 }
 
-bool inline PSIM::checkEventGone()
+inline bool PSIM::checkEventGone()
 {
   return (millis() - tempInterruptTime > 2000);
+
 }
 
 String PSIM::makeStatusMsg(byte battery, byte network)
@@ -1597,10 +1598,18 @@ void PSIM::checkRespSMS(char t1)
   }
 }
 
+void enableRingLevelInterrupt()
+{
+  
+}
+
 void PSIM::update()
 {
   if(inInterrupt && checkEventGone())
+  {
+    enableRingLevelInterrupt();
     inInterrupt=false;
+  }
 
   // if (rejectCommandsElligible() && !motor1->ACPowerState())
   if (rejectCommandsElligible() && addCheckRejectCommands())

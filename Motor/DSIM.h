@@ -27,6 +27,7 @@ class DSIM:public PSIM
     bool addCheckRejectCommands();
     void addUpdateStringData(String &str);
     void addUpdate();
+	void enableRingLevelInterrupt();
 	
 	public:
 
