@@ -72,7 +72,7 @@ class SIM
     void sendReadMsg(String str);
     bool isMsgBody(String &str);
     bool isAdmin(String str);
-    bool isPrimaryNumber(String str);
+    // bool isPrimaryNumber(String str);
     void gotMsgBody(String &str);
     bool isNewMsg(String &str);
 

@@ -227,12 +227,20 @@ void S_EEPROM::saveAutoStartSettings(bool temp)
 
 }
 
+// void S_EEPROM::saveProgramSize(unsigned long int temp)
+// {
+//   programSizeSet=true;
+//   PROGSIZE = temp;
+//   EEPROM.put(prgSizeAddress, PROGSIZE);
+// }
+
 void S_EEPROM::saveProgramSize(unsigned long int temp)
 {
   programSizeSet=true;
   PROGSIZE = temp;
-  EEPROM.put(prgSizeAddress, PROGSIZE);
+  EEPROM.put(prgSizeAddress, temp);
 }
+
 
 void S_EEPROM::saveAutoStartTimeSettings(unsigned short int temp)
 {
