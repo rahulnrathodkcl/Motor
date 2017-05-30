@@ -1598,10 +1598,10 @@ void PSIM::checkRespSMS(char t1)
   }
 }
 
-void enableRingLevelInterrupt()
-{
+// void enableRingLevelInterrupt()
+// {
   
-}
+// }
 
 void PSIM::update()
 {

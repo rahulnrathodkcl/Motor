@@ -176,7 +176,7 @@ class PSIM
     virtual bool addCheckRejectCommands() = 0;
     virtual void addUpdateStringData(String &str)=0;
     virtual void addUpdate() =0 ;
-    virtual void enableRingLevelInterrupt();
+    virtual void enableRingLevelInterrupt()=0;
 
 
   public:

@@ -94,8 +94,8 @@ void setup() {
     batStatus=true;
   }
 
-  PCICR |= (1 << PCIE0);    // set PCIE0 to enable PCMSK0 scan
-  PCMSK0 |= (1 << PCINT1);  // set PCINT1 to trigger an interrupt on state change
+  // PCICR |= (1 << PCIE0);    // set PCIE0 to enable PCMSK0 scan
+  // PCMSK0 |= (1 << PCINT1);  // set PCINT1 to trigger an interrupt on state change
 
   noInterrupts();
   // watchdogConfig(WATCHDOG_OFF);
@@ -298,25 +298,48 @@ void operateOnSleepElligible()
 void gotoSleep()
 {
 
-  set_sleep_mode(SLEEP_MODE_IDLE);   // sleep mode is set here
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);   // sleep mode is set here
   noInterrupts();
   sleep_enable();          // enables the sleep bit in the mcucr register
                              // so sleep is possible. just a safety pin 
-  power_adc_disable();
-  // power_aca_disable();
-  power_spi_disable();
-  power_timer0_disable();
-  power_timer1_disable();
-  power_timer2_disable();
-  power_twi_disable();
+  
+  ACSR &= ~(1<<ACIE);   //write 0 to ACIE bit in ACSR. (to disable the Analog Comparator Interrupt)
+  ACSR |= (1<<ACD);    //write 1 to ACD bit in ACSR.  (to disable the power to Analog Comparator)
 
+  
+  #ifndef __AVR_ATmega128__
+    power_all_disable();
+  #else
+    ADCSRA &= ~(1<<ADEN);      //disable ADC by setting ADCSRA.ADEN to 0.
+  #endif
+
+  //no need to disable TWI, as its not used in the application.
+  // TWCR &= ~(1<<TWEN);   //disable the TWI
+
+  // no need to disable the SPI, as it is already OFF, as its not used in the application.
+  // SPCR &= ~(1<<SPE);   //disable SPI
+
+  // power_adc_disable();
+  // // power_aca_disable();
+  // power_spi_disable();
+  // power_timer0_disable();
+  // power_timer1_disable();
+  // power_timer2_disable();
+  // power_twi_disable();
   interrupts();
   sleep_mode();            // here the device is actually put to sleep!!
  
                              // THE PROGRAM CONTINUES FROM HERE AFTER WAKING UP
   sleep_disable();         // first thing after waking from sleep:
                             // disable sleep...
-  power_all_enable();
+  #ifndef __AVR_ATmega128__
+    power_all_enable();
+  #else
+    ADCSRA |= (1<<ADEN);      //enable ADC by setting ADCSRA.ADEN to 1.
+    // ACSR &= ~(1<<ACD);    //write 0 to ACD bit in ACSR.  (to enable  the Analog Comparator)
+    // ACSR &= ~(1<<ACIE);   //write 0 to ACIE bit in ACSR. (to disable the Analog Comparator Interrupt)
+  #endif
+
 }
 
 
@@ -400,10 +423,10 @@ void loop() {
       motor1.resetAutoStart();
       // motor1.getMotorState();
 
-      PCICR |= (1 << PCIE0);   // set PCIE0 to enable PCMSK0 scan
-      PCMSK0 |= (1 << PCINT1); // set PCINT1 to trigger an interrupt on state change
-      PCMSK0 |= (1 << PCINT2);// set PCINT2 to trigger an interrupt on state change
-      PCMSK0 |= (1 << PCINT3);// set PCINT3 to trigger an interrupt on state change
+      // PCICR |= (1 << PCIE0);   // set PCIE0 to enable PCMSK0 scan
+      // PCMSK0 |= (1 << PCINT1); // set PCINT1 to trigger an interrupt on state change
+      // PCMSK0 |= (1 << PCINT2);// set PCINT2 to trigger an interrupt on state change
+      // PCMSK0 |= (1 << PCINT3);// set PCINT3 to trigger an interrupt on state change
       attachInterrupt(digitalPinToInterrupt(PIN_ACPHASE), IVR_PHASE, CHANGE);
       attachInterrupt(digitalPinToInterrupt(PIN_RING), IVR_RING, CHANGE);
 
